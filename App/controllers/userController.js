@@ -63,4 +63,15 @@ userController.list =async(req,res)=>{
         console.log(err)
     }
 }
+userController.account=async(req,res)=>{
+    try{
+        const user = await User.findById(req.user.id)
+        res.json({user})
+    }catch(err){
+        console.log(err)
+        res.status(500).json({ error: 'Internal server error' })
+    }
+
+}
+
 module.exports = userController

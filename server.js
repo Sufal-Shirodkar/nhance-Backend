@@ -42,19 +42,24 @@ io.on("connection",(socket)=>{
     });
     socket.on('message1', (data) => {
         console.log(data)
-        const {username,reciever,room,message} = data
+        const {username,reciever,room,message,isGroup,groupName} = data
         // socket.join(data.room)
         socket.to(data.room).emit('recieve_message',{
-            message:{username:username,reciever:reciever,message:message}
+            message:{username:username,reciever:reciever,message:message,isGroup:isGroup}
         })
        
     });
 
+    socket.on('join-group',(data)=>{
+        console.log(data)
+        socket.join(data.groupId)
+        socket.broadcast.emit('new-join',{username:data.username,groupName:data.groupName})
+    })
+
     // Handle room message
-    socket.on('room-message', (data) => {
-        console.log(data);
-        socket.to(data.roomId).emit('receive-message', data.message);
-    });
+    socket.on('group-message',(data)=>{
+        socket.to(data.group).emit('recieve_group_message',{message:data})
+    })
 
     socket.on("disconnect",()=>{
         console.log(`User ${socket.id} has left`)

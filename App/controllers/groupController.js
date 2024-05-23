@@ -14,7 +14,7 @@ groupController.create =async(req,res)=>{
 }
 groupController.list=async(req,res)=>{
     try{
-        const groups = await Group.find()
+        const groups = await Group.find().populate("members")
         res.json(groups)
     }catch(err){
         console.log(err)

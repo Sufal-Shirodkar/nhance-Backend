@@ -13,7 +13,8 @@ const { checkSchema } = require("express-validator");
 const configureDb = require('./config/db')
 const userController = require('./App/controllers/userController')
 const groupController = require('./App/controllers/groupController')
-
+const chatHistoryController = require('./App/controllers/chatController')
+const {findMatchingHistoryId} = require('./App/helpers/index')
 //validation files
 const {userRegistrationValidation,loginValidationSchema} = require('./App/validations/userValidation')
 const {authenticateUser} = require('./App/middleware/auth')
@@ -40,12 +41,19 @@ io.on("connection",(socket)=>{
         // Send a welcome message or other information
         socket.emit('welcome', { message: 'Welcome to the room!',id:data.roomId});
     });
-    socket.on('message1', (data) => {
-        console.log(data)
-        const {username,reciever,room,message,isGroup,groupName} = data
+    socket.on('message1', async(data) => {
+        const {username,reciever,room,message,isGroup,groupName,members} = data
+        const history = await chatHistoryController.findAll()
+        console.log(JSON.stringify(history,null,2))
+        const existingId = findMatchingHistoryId(history,data)
+        if(existingId){
+            
+
+        }
+        chatHistoryController.create(data)
         // socket.join(data.room)
         socket.to(data.room).emit('recieve_message',{
-            message:{username:username,reciever:reciever,message:message,isGroup:isGroup}
+            username:username,reciever:reciever,message:message,isGroup:isGroup
         })
        
     });
@@ -53,7 +61,8 @@ io.on("connection",(socket)=>{
     socket.on('join-group',(data)=>{
         console.log(data)
         socket.join(data.groupId)
-        socket.broadcast.emit('new-join',{username:data.username,groupName:data.groupName})
+        console.log(data.groupName)
+        socket.emit('new-join',{username:data.username,groupName:data.groupName})
     })
 
     // Handle room message
@@ -75,6 +84,7 @@ app.get('/api/users',authenticateUser,userController.list)
 app.post('/api/groups',authenticateUser,groupController.create)
 app.get('/api/groups',authenticateUser,groupController.list)
 app.put('/api/groups/:id',authenticateUser,groupController.update)
+app.get('/api/users/account',authenticateUser,userController.account)
 server.listen(port,()=>{
     console.log(`server is running on ${port}`)
 })

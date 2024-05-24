@@ -13,8 +13,6 @@ const { checkSchema } = require("express-validator");
 const configureDb = require('./config/db')
 const userController = require('./App/controllers/userController')
 const groupController = require('./App/controllers/groupController')
-const chatHistoryController = require('./App/controllers/chatController')
-const { findMatchingHistoryId } = require('./App/helpers/index')
 //validation files
 const { userRegistrationValidation, loginValidationSchema } = require('./App/validations/userValidation')
 const { authenticateUser } = require('./App/middleware/auth')
@@ -56,7 +54,7 @@ io.on("connection", (socket) => {
     socket.on('group_join',(data)=>{
         console.log(data)
         socket.join(data.id)
-        // socket.to(data.groupId).emit('group_message_receive', data)
+        
     })
 
     socket.on('group_message_sent', (data)=>{
@@ -64,40 +62,6 @@ io.on("connection", (socket) => {
         groupMsgCntrl.create(data)
         socket.to(data.groupId).emit('group_message_receive', data)
     })
-
-
-    // socket.on('message1', async(data) => {
-    //     const {username,reciever,room,message,isGroup,groupName,members} = data
-    //     const history = await chatHistoryController.findAll()
-    //     console.log(JSON.stringify(history,null,2))
-    //     const existingId = findMatchingHistoryId(history,data)
-    //     if(existingId){
-
-
-    //     }
-    //     chatHistoryController.create(data)
-    //     // socket.join(data.room)
-    //     socket.to(data.room).emit('recieve_message',{
-    //         username:username,reciever:reciever,message:message,isGroup:isGroup
-    //     })
-
-    // });
-
-    // socket.on('join-group',(data)=>{
-    //     console.log(data)
-    //     socket.join(data.groupId)
-    //     console.log(data.groupName)
-    //     socket.emit('new-join',{username:data.username,groupName:data.groupName})
-    // })
-
-    // // Handle room message
-    // socket.on('group-message',(data)=>{
-    //     socket.to(data.group).emit('recieve_group_message',{message:data})
-    // })
-
-    // socket.on("disconnect",()=>{
-    //     console.log(User ${socket.id} has left)
-    // })
 
 })
 
